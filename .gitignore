@@ -6,8 +6,8 @@ from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'    #Estamos salvando as modificações em nossa database 
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False        #Aqui desabilitamos as modificações para não serem salvas no banco
 
 db = SQLAlchemy(app)
 
