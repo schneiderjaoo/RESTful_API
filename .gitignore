@@ -1,160 +1,269 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+from datetime import datetime
 
-# C extensions
-*.so
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+app = Flask(__name__)
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+db = SQLAlchemy(app)
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
 
-# Translations
-*.mo
-*.pot
+class Music(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(120), unique=False, nullable=False)
+    duracao = db.Column(db.Integer, nullable=False)
+    generos_id = db.Column(db.Integer, nullable=False)
+    lancamento = db.Column(db.String, nullable=False)
+    created = db.Column(db.DateTime, default=datetime.utcnow)
+    modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
+    def __init__(self, nome, duracao, generos_id, lancamento):
+        self.nome = nome
+        self.duracao = duracao
+        self.generos_id = generos_id
+        self.lancamento = lancamento
 
-# Flask stuff:
-instance/
-.webassets-cache
+class MusicSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Music
+        include_fk = True
+        load_instance = True
 
-# Scrapy stuff:
-.scrapy
+music_schema = MusicSchema()
+music_schemas = MusicSchema(many=True)
 
-# Sphinx documentation
-docs/_build/
+class Artist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(120), unique=False, nullable=False)
+    gravadoras_id = db.Column(db.Integer, nullable=False)
+    created = db.Column(db.DateTime, default=datetime.utcnow)
+    modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-# PyBuilder
-.pybuilder/
-target/
+    def __init__(self, nome, gravadoras_id):
+        self.nome = nome
+        self.gravadoras_id = gravadoras_id
 
-# Jupyter Notebook
-.ipynb_checkpoints
+class ArtistSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Artist
+        include_fk = True
+        load_instance = True
 
-# IPython
-profile_default/
-ipython_config.py
+artist_schema = ArtistSchema()
+artist_schemas = ArtistSchema(many=True)
 
-# pyenv
-#   For a library or package, you might want to ignore these files since the code is
-#   intended to run in multiple environments; otherwise, check them in:
-# .python-version
+class Genero(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    descricao = db.Column(db.String(120), unique=False, nullable=False)
+    created = db.Column(db.DateTime, default=datetime.utcnow)
+    modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
+    def __init__(self, descricao):
+        self.descricao = descricao
 
-# poetry
-#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-#poetry.lock
+class GeneroSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Genero
+        include_fk = True
+        load_instance = True
 
-# pdm
-#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
-#pdm.lock
-#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
-#   in version control.
-#   https://pdm.fming.dev/#use-with-ide
-.pdm.toml
+genero_schema = GeneroSchema()
+genero_schemas = GeneroSchema(many=True)
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
-__pypackages__/
+class Gravadora(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(120), unique=False, nullable=False)
+    valor = db.Column(db.Integer, nullable=False)
+    vencimento = db.Column(db.String, nullable=False)
+    created = db.Column(db.DateTime, default=datetime.utcnow)
+    modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
+    def __init__(self, nome, valor, vencimento):
+        self.nome = nome
+        self.valor = valor
+        self.vencimento = vencimento
 
-# SageMath parsed files
-*.sage.py
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+class GravadoraSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Gravadora
+        include_fk = True
+        load_instance = True
 
-# Spyder project settings
-.spyderproject
-.spyproject
 
-# Rope project settings
-.ropeproject
+gravadora_schema = GravadoraSchema()
+gravadora_schemas = GravadoraSchema(many=True)
 
-# mkdocs documentation
-/site
+class Cliente(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    login = db.Column(db.String(45), unique=True, nullable=False)
+    senha = db.Column(db.String(45), nullable=False)
+    created = db.Column(db.DateTime, default=datetime.utcnow)
+    modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    planos_id = db.Column(db.Integer, nullable=False)
+    email = db.Column(db.String(50), nullable=False)
 
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+    def __init__(self, login, senha, planos_id, email):
+        self.login = login
+        self.senha = senha
+        self.planos_id = planos_id
+        self.email = email
 
-# Pyre type checker
-.pyre/
+class ClienteSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Cliente
+        include_fk = True
+        load_instance = True
 
-# pytype static type analyzer
-.pytype/
+cliente_schema = ClienteSchema()
+cliente_schemas = ClienteSchema(many=True)
 
-# Cython debug symbols
-cython_debug/
+class Plano(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    descricao = db.Column(db.String(45), unique=False, nullable=False)
+    valor = db.Column(db.Float(precision=2), nullable=False)
+    limite = db.Column(db.Integer, nullable=False)
+    created = db.Column(db.DateTime, default=datetime.utcnow)
+    modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+    def __init__(self, descricao, valor, limite):
+        self.descricao = descricao
+        self.valor = valor
+        self.limite = limite
+
+class PlanoSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Plano
+        include_fk = True
+        load_instance = True
+
+plano_schema = PlanoSchema()
+plano_schemas = PlanoSchema(many=True)
+
+class Pagamento(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    data = db.Column(db.Date, nullable=False)
+
+    def __init__(self, data):
+        self.data = data
+
+class PagamentoSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Pagamento
+        include_fk = True
+        load_instance = True
+
+pagamento_schema = PagamentoSchema()
+pagamento_schemas = PagamentoSchema(many=True)
+
+
+with app.app_context():
+    db.create_all()
+
+
+@app.route("/api/musicas/", methods=['GET', 'POST'])
+def musicas():
+    if request.method == 'GET':
+        all_music = Music.query.all()
+
+        return jsonify(music_schemas.dump(all_music))
+    elif request.method == 'POST':
+        new_music = request.get_json()
+        music = Music(new_music['nome'], new_music['duracao'], new_music['generos_id'], new_music['lancamento'])
+
+        db.session.add(music)
+        db.session.commit()
+
+        return jsonify({'message': 'Música criada com sucesso!'}), 201
+
+
+@app.route("/api/musicas/<int:music_id>", methods=['GET', 'PATCH', 'DELETE'])
+def musicas_by_id(music_id):
+    if request.method == 'GET':
+        music = Music.query.get(music_id)
+
+        if music is None:
+            return jsonify({'message': 'Música não encontrada!'}), 404
+
+        return jsonify(music_schema.dump(music))
+    elif request.method == 'PATCH':
+        music = Music.query.get(music_id)
+
+        if music is None:
+            return jsonify({'message': 'Música não encontrada para atualização!'}), 404
+
+        update_data = request.get_json()
+
+        music.nome = update_data.get('nome', music.nome)
+        music.duracao = update_data.get('duracao', music.duracao)
+        music.generos_id = update_data.get('generos_id', music.generos_id)
+        music.lancamento = update_data.get('lancamento', music.lancamento)
+
+        db.session.commit()
+
+        return jsonify({'message': 'Música atualizada com sucesso!'})
+    elif request.method == 'DELETE':
+        music = Music.query.get(music_id)
+
+        if music is None:
+            return jsonify({'message': 'Música não encontrada para deletar!'}), 404
+
+        db.session.delete(music)
+        db.session.commit()
+
+        return jsonify({'message': 'Música deletada com sucesso!'}), 204
+
+
+@app.route("/api/artistas/", methods=['GET', 'POST'])
+def artistas():
+    if request.method == 'GET':
+        all_artist = Artist.query.all()
+
+        return jsonify(artist_schemas.dump(all_artist))
+    elif request.method == 'POST':
+        new_artist = request.get_json()
+        artist = Artist(new_artist['nome'], new_artist['gravadoras_id'])
+
+        db.session.add(artist)
+        db.session.commit()
+
+        return jsonify({'message': 'Artista criado com sucesso!'}), 201
+
+
+@app.route("/api/artistas/<int:artist_id>", methods=['GET', 'PATCH', 'DELETE'])
+def artistas_by_id(artist_id):
+    if request.method == 'GET':
+        artist = Artist.query.get(artist_id)
+
+        if artist is None:
+            return jsonify({'message': 'Artista não encontrado!'}), 404
+
+        return jsonify(artist_schema.dump(artist))
+    elif request.method == 'PATCH':
+        artist = Artist.query.get(artist_id)
+
+        if artist is None:
+            return jsonify({'message': 'Artista não encontrado para atualização!'}), 404
+
+        update_data = request.get_json()
+
+        artist.nome = update_data.get('nome', artist.nome)
+        artist.gravadoras_id = update_data.get('gravadoras_id', artist.gravadoras_id)
+
+        db.session.commit()
+
+        return jsonify({'message': 'Artista atualizado com sucesso!'})
+    elif request.method == 'DELETE':
+        artist = Artist.query.get(artist_id)
+
+        if artist is None:
+            return jsonify({'message': 'Artista não encontrado para deletar!'}), 404
+
+        db.session.delete(artist)
+        db.session.commit()
+
+        return jsonify({'message': 'Artista deletado com sucesso!'}), 204
