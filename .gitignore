@@ -21,7 +21,8 @@ class Music(db.Model):
     created = db.Column(db.DateTime, default=datetime.utcnow)
     modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    def __init__(self, nome, duracao, generos_id, lancamento):
+    def __init__(self,id, nome, duracao, generos_id, lancamento):
+        self.id = id
         self.nome = nome
         self.duracao = duracao
         self.generos_id = generos_id
@@ -43,7 +44,8 @@ class Artist(db.Model):
     created = db.Column(db.DateTime, default=datetime.utcnow)
     modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    def __init__(self, nome, gravadoras_id):
+    def __init__(self,id, nome, gravadoras_id):
+        self.id = id
         self.nome = nome
         self.gravadoras_id = gravadoras_id
 
@@ -62,7 +64,8 @@ class Genero(db.Model):
     created = db.Column(db.DateTime, default=datetime.utcnow)
     modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    def __init__(self, descricao):
+    def __init__(self,id, descricao):
+        self.id = id
         self.descricao = descricao
 
 class GeneroSchema(SQLAlchemyAutoSchema):
@@ -82,7 +85,8 @@ class Gravadora(db.Model):
     created = db.Column(db.DateTime, default=datetime.utcnow)
     modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    def __init__(self, nome, valor, vencimento):
+    def __init__(self,id, nome, valor, vencimento):
+        self.id = id
         self.nome = nome
         self.valor = valor
         self.vencimento = vencimento
@@ -107,7 +111,8 @@ class Cliente(db.Model):
     planos_id = db.Column(db.Integer, nullable=False)
     email = db.Column(db.String(50), nullable=False)
 
-    def __init__(self, login, senha, planos_id, email):
+    def __init__(self,id, login, senha, planos_id, email):
+        self.id = id
         self.login = login
         self.senha = senha
         self.planos_id = planos_id
@@ -130,7 +135,8 @@ class Plano(db.Model):
     created = db.Column(db.DateTime, default=datetime.utcnow)
     modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    def __init__(self, descricao, valor, limite):
+    def __init__(self,id descricao, valor, limite):
+        self.id = id
         self.descricao = descricao
         self.valor = valor
         self.limite = limite
@@ -146,10 +152,10 @@ plano_schemas = PlanoSchema(many=True)
 
 class Pagamento(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    data = db.Column(db.Date, nullable=False)
+    data = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def __init__(self, data):
-        self.data = data
+    def __init__(self,id):
+        self.id = id
 
 class PagamentoSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -173,7 +179,7 @@ def musicas():
         return jsonify(music_schemas.dump(all_music))
     elif request.method == 'POST':
         new_music = request.get_json()
-        music = Music(new_music['nome'], new_music['duracao'], new_music['generos_id'], new_music['lancamento'])
+        music = Music(new_music['id'], new_music['nome'], new_music['duracao'], new_music['generos_id'], new_music['lancamento'])
 
         db.session.add(music)
         db.session.commit()
